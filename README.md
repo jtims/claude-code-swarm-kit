@@ -33,7 +33,9 @@ In Claude Code, every agent in a workflow inherits the session's model unless th
 
 ## Install
 
-Copy each folder into the matching folder under `~/.claude/`: `agents/`, `workflows/`, `skills/`, `hooks/`, `commands/`, `scripts/`. Register the two PreToolUse hooks in `~/.claude/settings.json` against the Agent and Workflow tools. Never set a global subagent-model override; the pins in the definitions are the mechanism. Run `python3 hooks/validate-agent-roster.py` and require PASS.
+Copy each folder into the matching folder under `~/.claude/`: `agents/`, `workflows/`, `skills/`, `hooks/`, `commands/`, `scripts/`. Register the two PreToolUse hooks in `~/.claude/settings.json` against the Agent and Workflow tools. Never set a global subagent-model override; the pins in the definitions are the mechanism. The linters need Python 3 with PyYAML (`python3 -m pip install pyyaml`); without it the roster lint fails closed rather than skip its pin checks. Run `python3 hooks/validate-agent-roster.py` and require PASS.
+
+`workflows/research-swarm.js` is a script for Claude Code's Workflow tool, not a standalone Node program: it calls the harness's agent functions, and its top-level `return` is a syntax error wherever the file is loaded as an ES module.
 
 ## Status, stated plainly
 

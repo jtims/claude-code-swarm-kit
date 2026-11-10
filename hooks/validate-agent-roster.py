@@ -151,6 +151,14 @@ def main():
         targets.append((d, "skill"))
 
     findings, errors, warns = [], 0, 0
+    degraded = yaml is None
+    if degraded:
+        # Fail closed: without PyYAML the E1/E4/E5 pin checks cannot run, so a PASS
+        # would certify checks that never happened.
+        findings.append({"level": "ERROR", "code": "E0", "kind": "environment", "target": "pyyaml",
+                         "detail": "PyYAML not importable; E1/E4/E5 checks cannot run "
+                                   "(install it: python3 -m pip install pyyaml)"})
+        errors += 1
     for path, kind in targets:
         for level, code, detail in check_file(path, kind):
             label = os.path.basename(os.path.dirname(path)) if path.endswith("SKILL.md") else os.path.basename(path)
@@ -163,13 +171,12 @@ def main():
 
     if as_json:
         print(jsonlib.dumps({"findings": findings, "errors": errors, "warnings": warns,
+                             "degraded": degraded,
                              "agents": sum(1 for _, k in targets if k == "agent"),
                              "skills": sum(1 for _, k in targets if k == "skill")}, indent=2))
     else:
         for f in findings:
             print("%s | %s | %s (%s) | %s" % (f["level"], f["code"], f["target"], f["kind"], f["detail"]))
-        if yaml is None:
-            print("WARN | -- | pyyaml absent — E1/E4/E5 checks degraded to raw-text only")
         n_a = sum(1 for _, k in targets if k == "agent")
         n_s = sum(1 for _, k in targets if k == "skill")
         print("%s | %d agent(s) + %d skill(s) scanned | %d error(s), %d warning(s)"
